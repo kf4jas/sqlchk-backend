@@ -2,15 +2,15 @@ package web
 
 import (
 	"database/sql"
-	"errors"
 	"embed"
-    "fmt"
-	"net/http"
-    "github.com/gofiber/fiber/v2"
+	"errors"
+	"fmt"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-    "github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/lib/pq"
 	"log"
+	"net/http"
 )
 
 type Payload struct {
@@ -34,18 +34,18 @@ func Start() {
 		// StackTraceHandler: defaultStackTraceHandler,
 	}
 	app.Use(recover.New(CustomConfig))
-    
+
 	//app.Use(recover.New())
-	
-    app.Get("/", func(c *fiber.Ctx) error {
+
+	app.Get("/", func(c *fiber.Ctx) error {
 		return c.SendString("Hello, World!")
 	})
 
-    app.Use("/static", filesystem.New(filesystem.Config{
-        Root: http.FS(EmbedDirStatic),
-        PathPrefix: "frontend/public",
-        Browse: false, // security 
-    }))
+	app.Use("/static", filesystem.New(filesystem.Config{
+		Root:       http.FS(EmbedDirStatic),
+		PathPrefix: "frontend/public",
+		Browse:     false, // security
+	}))
 
 	app.Get("/query", func(c *fiber.Ctx) error {
 		queryValue := c.Query("q")

@@ -16,16 +16,17 @@ limitations under the License.
 package main
 
 import (
-    "sqlchk/cmd"
-    "sqlchk/internal/web"
-    "embed"
+	"embed"
+	"sqlchk/cmd"
+	"sqlchk/internal/web"
 )
 
 // Embed a directory
+//
 //go:embed frontend/public/*
 var embedDirStatic embed.FS
 
 func main() {
-    web.EmbedDirStatic = embedDirStatic
+	web.EmbedDirStatic = embedDirStatic
 	cmd.Execute()
 }
