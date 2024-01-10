@@ -2,8 +2,8 @@ VERSION := 0.1.0
 
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-ifneq (,$($ROOT_DIR/.version))
-    include $ROOT_DIR/.version
+ifneq (,${ROOT_DIR}/.version)
+    include ${ROOT_DIR}/.version
     export
 endif
 
@@ -14,7 +14,7 @@ build: clean
 	go build
 
 clean:
-	-rm -f sqlchk
+	-rm -f ${APPNAME}
 
 patch:
 	git aftermerge patch || exit 1
