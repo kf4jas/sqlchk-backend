@@ -24,13 +24,10 @@ import (
 // serverCmd represents the server command
 var serverCmd = &cobra.Command{
 	Use:   "server",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "A web server for querying and loading data into a db",
+	Long: `A web server for querying and loading data into a db.
+It loads a svelte app that's hosted within the same binary via the embed method.
+Currently it's using postgres as a backend but I'm moving it to sqlite after I finish part 2`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("server called")
 		web.Start()

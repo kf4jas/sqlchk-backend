@@ -30,3 +30,6 @@ deploy:
 
 fmt:
 	go fmt ./...
+
+dev: build
+	sleep 1 && ./sqlchk server
