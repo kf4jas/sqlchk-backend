@@ -1,0 +1,20 @@
+version: "3"
+   
+services:
+  app:
+    restart: always
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: sqlchkimg
+    command: sleep 3000000
+    networks:
+      - postgres_net
+    ports:
+      - "3030:3030"
+
+networks:
+  postgres_net:
+    name: app_postgres_trkip
+    external: true
+    # command: /code/deploy/entrypoint.sh

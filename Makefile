@@ -33,3 +33,9 @@ fmt:
 
 dev: build
 	sleep 1 && ./sqlchk server
+
+docker:
+	docker compose -f deploy/docker-compose.yml up -d --build
+
+logs:
+	docker compose -f deploy/docker-compose.yml logs -f
