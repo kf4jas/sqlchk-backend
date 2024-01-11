@@ -157,7 +157,7 @@ func printQueryResult(db *sql.DB, query string) ([]interface{}, error) {
 	rowsout, err := ProcessRows(rows)
 	return rowsout, err
 }
-
+// ProcessRows - this turns the rows into key / value objects
 func ProcessRows(rows *sql.Rows) ([]interface{}, error) {
 	out := make([]interface{}, 0)
 	cols, _ := rows.Columns()
