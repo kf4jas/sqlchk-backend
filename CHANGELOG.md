@@ -13,3 +13,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - adds comments for processrows
 - adds deployment for local docker env
 
+### Changed
+- updates the order of ops for the dockerfile
+

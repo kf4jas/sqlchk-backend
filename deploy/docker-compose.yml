@@ -7,7 +7,7 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile
     image: sqlchkimg
-    command: sleep 3000000
+    # command: sleep 3000000
     networks:
       - postgres_net
     ports:
