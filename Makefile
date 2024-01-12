@@ -34,8 +34,12 @@ fmt:
 dev: build
 	sleep 1 && ./sqlchk server
 
-docker:
+up:
 	docker compose -f deploy/docker-compose.yml up -d --build
 
 logs:
 	docker compose -f deploy/docker-compose.yml logs -f
+down:
+	docker compose -f deploy/docker-compose.yml down
+vol:
+	docker volume rm deploy_postgres_local

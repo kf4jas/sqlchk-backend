@@ -261,16 +261,20 @@ pg_setup_hba_conf() {
 
 # SSL Generator
 if [ -n "${SSL_SUBJ:-}" ]; then
-    export SSL_SUBJ_STR="${SSL_SUBJ}"
+    SSL_SUBJ_STR=${SSL_SUBJ}
 else
-    export SSL_SUBJ_STR="/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com"
+    SSL_SUBJ_STR="/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com"
 fi
-
 add_ssl_to_postgresql() {
-    /usr/bin/openssl req -new -newkey rsa:4096 -nodes -keyout /var/lib/postgresql/data/server.key -out /var/lib/postgresql/data/server.csr -subj "${SSL_SUBJ_STR}"
-    /usr/bin/openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout /var/lib/postgresql/data/server.key -out /var/lib/postgresql/data/server.crt -subj "${SSL_SUBJ_STR}"
+openssl req -new -newkey rsa:4096 -nodes \
+    -keyout /var/lib/postgresql/data/server.key -out /var/lib/postgresql/data/server.csr \
+    -subj ${SSL_SUBJ_STR}
 
-    cp /var/lib/postgresql/data/server.crt /var/lib/postgresql/data/root.crt
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+    -subj ${SSL_SUBJ_STR} \
+    -keyout /var/lib/postgresql/data/server.key  -out /var/lib/postgresql/data/server.crt
+
+cp /var/lib/postgresql/data/server.crt /var/lib/postgresql/data/root.crt
     chmod 400 /var/lib/postgresql/data/server.key
     chown postgres.postgres /var/lib/postgresql/data/server.key
     cat <<EOT >> /var/lib/postgresql/data/postgresql.conf 
@@ -348,12 +352,8 @@ _main() {
 			ls /docker-entrypoint-initdb.d/ > /dev/null
 
 			docker_init_database_dir
-            pg_setup_hba_conf "$@"
-
-            if [ ! -f /var/lib/postgresql/data/server.key ]; then
-                add_ssl_to_postgresql
-            fi
-
+			pg_setup_hba_conf "$@"
+			add_ssl_to_postgresql
 			# PGPASSWORD is required for psql when authentication is required for 'local' connections via pg_hba.conf and is otherwise harmless
 			# e.g. when '--auth=md5' or '--auth-local=md5' is used in POSTGRES_INITDB_ARGS
 			export PGPASSWORD="${PGPASSWORD:-$POSTGRES_PASSWORD}"
@@ -361,9 +361,9 @@ _main() {
 
 			docker_setup_db
 			docker_process_init_files /docker-entrypoint-initdb.d/*
-			docker_temp_server_stop
 
-            unset PGPASSWORD
+			docker_temp_server_stop
+			unset PGPASSWORD
 
 			cat <<-'EOM'
 

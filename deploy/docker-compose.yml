@@ -2,14 +2,15 @@ version: "3.5"
    
 services:
   sqlchk:
-    restart: always
+    restart: unless-stopped
     build:
       context: ..
       dockerfile: deploy/app/Dockerfile
     image: sqlchkimg
     # command: sleep 3000000
     networks:
-      - postgres_net
+      postgres_net:
+        ipv4_address: 172.16.25.10
     ports:
       - "3030:3030"
 
@@ -29,12 +30,17 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - postgres_net
+      postgres_net:
+        ipv4_address: 172.16.25.5
     restart: unless-stopped
 
 networks:
   postgres_net:
     driver: bridge
+    ipam:
+        driver: default
+        config:
+            - subnet: "172.16.25.0/24"
 
 volumes:
     postgres_local:

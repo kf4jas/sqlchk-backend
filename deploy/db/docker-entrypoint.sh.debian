@@ -103,24 +103,20 @@ docker_init_database_dir() {
 # print large warning if POSTGRES_HOST_AUTH_METHOD is set to 'trust'
 # assumes database is not set up, ie: [ -z "$DATABASE_ALREADY_EXISTS" ]
 docker_verify_minimum_env() {
-	case "${PG_MAJOR:-}" in
-		12 | 13) # https://github.com/postgres/postgres/commit/67a472d71c98c3d2fa322a1b4013080b20720b98
-			# check password first so we can output the warning before postgres
-			# messes it up
-			if [ "${#POSTGRES_PASSWORD}" -ge 100 ]; then
-				cat >&2 <<-'EOWARN'
+	# check password first so we can output the warning before postgres
+	# messes it up
+	if [ "${#POSTGRES_PASSWORD}" -ge 100 ]; then
+		cat >&2 <<-'EOWARN'
 
-					WARNING: The supplied POSTGRES_PASSWORD is 100+ characters.
+			WARNING: The supplied POSTGRES_PASSWORD is 100+ characters.
 
-					  This will not work if used via PGPASSWORD with "psql".
+			  This will not work if used via PGPASSWORD with "psql".
 
-					  https://www.postgresql.org/message-id/flat/E1Rqxp2-0004Qt-PL%40wrigleys.postgresql.org (BUG #6412)
-					  https://github.com/docker-library/postgres/issues/507
+			  https://www.postgresql.org/message-id/flat/E1Rqxp2-0004Qt-PL%40wrigleys.postgresql.org (BUG #6412)
+			  https://github.com/docker-library/postgres/issues/507
 
-				EOWARN
-			fi
-			;;
-	esac
+		EOWARN
+	fi
 	if [ -z "$POSTGRES_PASSWORD" ] && [ 'trust' != "$POSTGRES_HOST_AUTH_METHOD" ]; then
 		# The - option suppresses leading tabs but *not* spaces. :)
 		cat >&2 <<-'EOE'
@@ -229,7 +225,6 @@ docker_setup_env() {
 	: "${POSTGRES_HOST_AUTH_METHOD:=}"
 
 	declare -g DATABASE_ALREADY_EXISTS
-	: "${DATABASE_ALREADY_EXISTS:=}"
 	# look specifically for PG_VERSION, as it is expected in the DB dir
 	if [ -s "$PGDATA/PG_VERSION" ]; then
 		DATABASE_ALREADY_EXISTS='true'
@@ -254,23 +249,25 @@ pg_setup_hba_conf() {
 			printf '# warning trust is enabled for all connections\n'
 			printf '# see https://www.postgresql.org/docs/12/auth-trust.html\n'
 		fi
-		# printf 'host all all all %s\n' "$POSTGRES_HOST_AUTH_METHOD"
-        printf 'hostssl all all all %s\n' "$POSTGRES_HOST_AUTH_METHOD"
+		printf 'hostssl all all all %s\n' "$POSTGRES_HOST_AUTH_METHOD"
 	} >> "$PGDATA/pg_hba.conf"
 }
 
-# SSL Generator
 if [ -n "${SSL_SUBJ:-}" ]; then
-    export SSL_SUBJ_STR="${SSL_SUBJ}"
+    SSL_SUBJ_STR=${SSL_SUBJ}
 else
-    export SSL_SUBJ_STR="/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com"
+    SSL_SUBJ_STR="/C=US/ST=Denial/L=Springfield/O=Dis/CN=www.example.com"
 fi
-
 add_ssl_to_postgresql() {
-    /usr/bin/openssl req -new -newkey rsa:4096 -nodes -keyout /var/lib/postgresql/data/server.key -out /var/lib/postgresql/data/server.csr -subj "${SSL_SUBJ_STR}"
-    /usr/bin/openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -keyout /var/lib/postgresql/data/server.key -out /var/lib/postgresql/data/server.crt -subj "${SSL_SUBJ_STR}"
+openssl req -new -newkey rsa:4096 -nodes \
+    -keyout /var/lib/postgresql/data/server.key -out /var/lib/postgresql/data/server.csr \
+    -subj ${SSL_SUBJ_STR}
 
-    cp /var/lib/postgresql/data/server.crt /var/lib/postgresql/data/root.crt
+openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 \
+    -subj ${SSL_SUBJ_STR} \
+    -keyout /var/lib/postgresql/data/server.key  -out /var/lib/postgresql/data/server.crt
+
+cp /var/lib/postgresql/data/server.crt /var/lib/postgresql/data/root.crt
     chmod 400 /var/lib/postgresql/data/server.key
     chown postgres.postgres /var/lib/postgresql/data/server.key
     cat <<EOT >> /var/lib/postgresql/data/postgresql.conf 
@@ -283,7 +280,6 @@ ssl_key_file = 'server.key'
 EOT
 
 }
-
 
 # start socket-only postgresql server for setting up or running scripts
 # all arguments will be passed along as arguments to `postgres` (via pg_ctl)
@@ -337,7 +333,7 @@ _main() {
 		docker_create_db_directories
 		if [ "$(id -u)" = '0' ]; then
 			# then restart script as postgres user
-			exec su-exec postgres "$BASH_SOURCE" "$@"
+			exec gosu postgres "$BASH_SOURCE" "$@"
 		fi
 
 		# only run initialization on an empty data directory
@@ -348,11 +344,8 @@ _main() {
 			ls /docker-entrypoint-initdb.d/ > /dev/null
 
 			docker_init_database_dir
-            pg_setup_hba_conf "$@"
-
-            if [ ! -f /var/lib/postgresql/data/server.key ]; then
-                add_ssl_to_postgresql
-            fi
+			pg_setup_hba_conf "$@"
+			add_ssl_to_postgresql
 
 			# PGPASSWORD is required for psql when authentication is required for 'local' connections via pg_hba.conf and is otherwise harmless
 			# e.g. when '--auth=md5' or '--auth-local=md5' is used in POSTGRES_INITDB_ARGS
@@ -361,9 +354,9 @@ _main() {
 
 			docker_setup_db
 			docker_process_init_files /docker-entrypoint-initdb.d/*
-			docker_temp_server_stop
 
-            unset PGPASSWORD
+			docker_temp_server_stop
+			unset PGPASSWORD
 
 			cat <<-'EOM'
 
