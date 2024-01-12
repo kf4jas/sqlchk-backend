@@ -1,11 +1,11 @@
-version: "3"
+version: "3.5"
    
 services:
-  app:
+  sqlchk:
     restart: always
     build:
       context: ..
-      dockerfile: deploy/Dockerfile
+      dockerfile: deploy/app/Dockerfile
     image: sqlchkimg
     # command: sleep 3000000
     networks:
@@ -13,8 +13,35 @@ services:
     ports:
       - "3030:3030"
 
+  postgres:
+    container_name: postgres_local
+    build:
+        context: ./db/
+        dockerfile: Dockerfile
+    # image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /var/lib/postgresql/data
+      SSL_SUBJ: "/C=US/ST=FL/L=Coral Springs/O=IT/CN=database.local"
+    volumes:
+       - postgres_local:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres_net
+    restart: unless-stopped
+
 networks:
   postgres_net:
-    name: app_postgres_trkip
-    external: true
+    driver: bridge
+
+volumes:
+    postgres_local:
+
+
+#~ networks:
+  #~ postgres_net:
+    #~ name: app_postgres_trkip
+    #~ external: true
     # command: /code/deploy/entrypoint.sh

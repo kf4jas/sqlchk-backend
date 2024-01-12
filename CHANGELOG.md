@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - adds the data post uri
 - adds comments for processrows
 - adds deployment for local docker env
+- adds db container and organizes container info
 
 ### Changed
 - updates the order of ops for the dockerfile
