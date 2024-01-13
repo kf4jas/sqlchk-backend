@@ -1,0 +1,13 @@
+# FROM rockylinux:9
+FROM quay.io/centos/centos:stream9
+#ARG VERSION
+#ENV VERSION=${VERSION}
+#RUN echo "this version is ${VERSION}"
+WORKDIR /root
+RUN dnf update -y 
+RUN dnf install -y rpmdevtools rpmlint golang && dnf clean all && useradd -d /home/builder -m -c "Build User" -s /bin/bash builder
+WORKDIR /home/builder
+USER builder
+RUN rpmdev-setuptree
+RUN rpmdev-newspec example
+

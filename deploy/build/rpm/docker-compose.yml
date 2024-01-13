@@ -1,0 +1,13 @@
+version: "3"
+services:
+  rpmbuild:
+    environment:
+      VERSION: ${VERSION}
+    build:
+      context: .
+      dockerfile: Dockerfile.centos9
+      args:
+        - VERSION=${VERSION}
+    volumes:
+      - ./build:/home/builder/rpmbuild
+    command: "rpmbuild -ba rpmbuild/SPEC/sqlchk.spec"
