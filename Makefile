@@ -1,5 +1,7 @@
 VERSION := 0.1.1
 
+.DEFAULT_GOAL := build
+
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 ifneq (,${ROOT_DIR}/.version)
