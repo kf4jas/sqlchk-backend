@@ -1,0 +1,78 @@
+version: "3.5"
+   
+services:
+  sqlchk:
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: deploy/app/Dockerfile
+    image: sqlchkimg
+    # command: sleep 3000000
+    networks:
+      postgres_net:
+        ipv4_address: 172.16.25.10
+    ports:
+      - "3030:3030"
+
+  worker:
+    restart: unless-stopped
+    image: sqlchkimg
+    command: ["/sqlchk","worker"]
+    networks:
+      postgres_net:
+        ipv4_address: 172.16.25.15
+
+
+  postgres:
+    container_name: postgres_local
+    build:
+        context: ./db/
+        dockerfile: Dockerfile
+    # image: postgres:15
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      PGDATA: /var/lib/postgresql/data
+      SSL_SUBJ: "/C=US/ST=FL/L=Coral Springs/O=IT/CN=database.local"
+    volumes:
+       - postgres_local:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      postgres_net:
+        ipv4_address: 172.16.25.5
+    restart: unless-stopped
+
+  redis:
+    container_name: redismq
+    image: redis:7.2-alpine
+    restart: always
+    expose:
+      - '6379'
+    ports:
+      - '6379:6379'
+    #    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis:/data
+    networks:
+      postgres_net:
+        ipv4_address: 172.16.25.6
+
+networks:
+  postgres_net:
+    driver: bridge
+    ipam:
+        driver: default
+        config:
+            - subnet: "172.16.25.0/24"
+
+volumes:
+    postgres_local:
+    redis:
+
+#~ networks:
+  #~ postgres_net:
+    #~ name: app_postgres_trkip
+    #~ external: true
+    # command: /code/deploy/entrypoint.sh

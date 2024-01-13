@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-	http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,33 +17,36 @@ package cmd
 
 import (
 	"fmt"
+    "sqlchk/internal/worker"
 	"github.com/spf13/cobra"
-	"sqlchk/internal/web"
 )
 
-// serverCmd represents the server command
-var serverCmd = &cobra.Command{
-	Use:   "server",
-	Short: "A web server for querying and loading data into a db",
-	Long: `A web server for querying and loading data into a db.
-It loads a svelte app that's hosted within the same binary via the embed method.
-Currently it's using postgres as a backend but I'm moving it to sqlite after I finish part 2`,
+// workerCmd represents the worker command
+var workerCmd = &cobra.Command{
+	Use:   "worker",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("server called")
-		web.Start()
+		fmt.Println("worker called")
+        fmt.Println(worker.Start())
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(workerCmd)
 
 	// Here you will define your flags and configuration settings.
 
 	// Cobra supports Persistent Flags which will work for this command
 	// and all subcommands, e.g.:
-	// serverCmd.PersistentFlags().String("foo", "", "A help for foo")
+	// workerCmd.PersistentFlags().String("foo", "", "A help for foo")
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// serverCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	// workerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
