@@ -3,4 +3,4 @@
 .env
 *.log
 .git
-
+sqlchk

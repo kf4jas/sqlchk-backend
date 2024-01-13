@@ -14,6 +14,15 @@ services:
     ports:
       - "3030:3030"
 
+  worker:
+    restart: unless-stopped
+    image: sqlchkimg
+    command: ["/sqlchk","worker"]
+    networks:
+      postgres_net:
+        ipv4_address: 172.16.25.15
+
+
   postgres:
     container_name: postgres_local
     build:
@@ -34,6 +43,22 @@ services:
         ipv4_address: 172.16.25.5
     restart: unless-stopped
 
+  redis:
+    container_name: redismq
+    image: redis:7.2-alpine
+    restart: always
+    expose:
+      - '6379'
+    ports:
+      - '6379:6379'
+    #    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis:/data
+    networks:
+      postgres_net:
+        ipv4_address: 172.16.25.6
+
 networks:
   postgres_net:
     driver: bridge
@@ -44,7 +69,7 @@ networks:
 
 volumes:
     postgres_local:
-
+    redis:
 
 #~ networks:
   #~ postgres_net:
