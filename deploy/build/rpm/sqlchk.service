@@ -1,0 +1,15 @@
+[Unit]
+Description=Allowlist Cluster Agent
+After=network.target
+
+[Service]
+Type=simple
+# User=root
+# WorkingDirectory=/home/allowlist
+ExecStart=/usr/local/bin/allowlist
+#Restart=no
+Restart=always
+# Other Restart options: no, or always, on-abort, etc
+
+[Install]
+WantedBy=multi-user.target

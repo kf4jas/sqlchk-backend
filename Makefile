@@ -1,4 +1,6 @@
-VERSION := 0.1.0
+VERSION := 0.1.1
+
+.DEFAULT_GOAL := build
 
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 

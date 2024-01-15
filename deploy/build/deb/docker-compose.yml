@@ -1,0 +1,11 @@
+version: "3"
+services:
+  debbuild:
+    environment:
+      VERSION: "${VERSION}"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/home/builder/
+    command: "/bin/bash /home/builder/debBuild.sh ${VERSION}"

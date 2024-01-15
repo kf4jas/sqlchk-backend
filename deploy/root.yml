@@ -1,0 +1,18 @@
+---
+- name: Full Deploy Strategy for SQLChk
+  hosts: all
+  connection: ssh
+  gather_facts: True
+  remote_user: joes
+  become: true
+  become_user: root
+  serial: 1
+  tasks:
+    - name: Install SQLChk
+      include: playbooks/install.yml
+      when: sqlchk_install is defined
+
+    - name: Uninstall SQLChk
+      include: playbooks/remove.yml
+      ignore_errors: yes
+      when: sqlchk_remove is defined

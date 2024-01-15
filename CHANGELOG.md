@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 [Also based on](https://github.com/conventional-changelog/standard-version/blob/master/CHANGELOG.md) so decending.
 
+## [0.1.1] - 2024-01-13
+### Added
+- adds default target var to makefile
+- adds playbooks and ansible code
+- adds package building code for rpm and deb
+
 ## [0.1.0] - 2024-01-13
 ### Added
 - adds changelog and versionupdater
@@ -18,4 +24,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 - updates the order of ops for the dockerfile
 - fixes the postgresql ssl setup
-
