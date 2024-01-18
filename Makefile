@@ -1,4 +1,4 @@
-VERSION := 0.1.1
+VERSION := 0.1.2
 
 .DEFAULT_GOAL := build
 
@@ -41,7 +41,9 @@ up:
 
 logs:
 	docker compose -f deploy/docker-compose.yml logs -f
+
 down:
 	docker compose -f deploy/docker-compose.yml down
+
 vol:
 	docker volume rm deploy_postgres_local
