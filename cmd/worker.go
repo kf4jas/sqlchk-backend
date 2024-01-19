@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,8 +17,8 @@ package cmd
 
 import (
 	"fmt"
-    "sqlchk/internal/worker"
 	"github.com/spf13/cobra"
+	"sqlchk/internal/worker"
 )
 
 // workerCmd represents the worker command
@@ -33,7 +33,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("worker called")
-        fmt.Println(worker.Start())
+		fmt.Println(worker.Start())
 	},
 }
 

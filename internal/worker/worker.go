@@ -1,10 +1,10 @@
 package worker
 
 import (
-    "sqlchk/internal/utils"
-    "github.com/RichardKnop/machinery/v1/log"
-    "github.com/RichardKnop/machinery/v1/tasks"
 	tracers "github.com/RichardKnop/machinery/example/tracers"
+	"github.com/RichardKnop/machinery/v1/log"
+	"github.com/RichardKnop/machinery/v1/tasks"
+	"sqlchk/internal/utils"
 )
 
 func Start() error {

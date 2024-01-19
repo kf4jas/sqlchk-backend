@@ -6,9 +6,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-    "sqlchk/internal/db"
-    "sqlchk/internal/utils"
 	"net/http"
+	"sqlchk/internal/db"
+	"sqlchk/internal/utils"
 )
 
 type Payload struct {
@@ -44,20 +44,20 @@ func Start() {
 		PathPrefix: "frontend/public",
 		Browse:     false, // security
 	}))
-    app.Get("/log",func(c *fiber.Ctx) error {
-        utils.SendToLog("this log")
-        return nil
-    })
+	app.Get("/log", func(c *fiber.Ctx) error {
+		utils.SendToLog("this log")
+		return nil
+	})
 	app.Get("/query", func(c *fiber.Ctx) error {
 		queryValue := c.Query("q")
 		// Safety Code v1.1
 		// safeQuery := SafetyChecks(payload.Query)
 		// Connect to database
-		cdb := db.OpenConn()
+		cdb := db.GetDriver()
 
 		// Raw SQL
 		fmt.Printf("query: %v\n", queryValue)
-		rowsout, err := db.PrintQueryResult(cdb, queryValue)
+		rowsout, err := cdb.PrintQueryResult(queryValue)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
@@ -71,7 +71,7 @@ func Start() {
 
 	app.Post("/data", func(c *fiber.Ctx) error {
 		table_name := c.Query("table")
-        utils.SendProcessJSONTask(table_name, c.Body())
+		utils.SendProcessJSONTask(table_name, c.Body())
 		return c.Send([]byte("Added"))
 	})
 
@@ -85,12 +85,12 @@ func Start() {
 		// connStr := "postgresql://joee:password@localhost/joee?sslmode=require"
 		// connStr := payload.ConnStr
 		// Connect to database
-		cdb := db.OpenConn()
+		cdb := db.GetDriver()
 		// Safety Code v1.1
 		// safeQuery := SafetyChecks(payload.Query)
 		// Raw SQL
 		fmt.Printf("Wow: %v\n", payload.Query)
-		rowsout, err := db.PrintQueryResult(cdb, payload.Query)
+		rowsout, err := cdb.PrintQueryResult(payload.Query)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
