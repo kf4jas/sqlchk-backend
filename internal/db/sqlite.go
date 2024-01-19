@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/lib/pq"
+	lite "github.com/mattn/go-sqlite3"
 	"github.com/spf13/viper"
 	"log"
 	"regexp"
@@ -13,13 +13,15 @@ import (
     "strings"
 )
 
-// printQueryResult - a very ugly function that allows me to return various things
-func PrintQueryResult(db *sql.DB, query string) ([]interface{}, error) {
+const file string = "sqlite.db"
+
+// printQueryResultsqlite - a very ugly function that allows me to return various things
+func PrintQueryResultSqlite(db *sql.DB, query string) ([]interface{}, error) {
 	rows, err := db.Query(query)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok {
-			log.Println(pqErr.Code.Name())
-			return nil, errors.New(pqErr.Code.Name())
+		if liteErr, ok := err.(*lite.Error); ok {
+			log.Println(liteErr.Code.Name())
+			return nil, errors.New(liteErr.Code.Name())
 		}
 		return nil, errors.New("unknown") // fiber.StatusInternalServerError
 	}
@@ -28,9 +30,9 @@ func PrintQueryResult(db *sql.DB, query string) ([]interface{}, error) {
 	return rowsout, err
 }
 
-func CheckifTableExists(table string) bool {
-	queryValue := "select tablename as table from pg_tables where schemaname = 'public'"
-	db := OpenConn()
+func CheckifTableExistsSQLite(table string) bool {
+	queryValue := "SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
+	db := OpenConn("sqlite3")
 	rowsout, err := PrintQueryResult(db, queryValue)
 	if err != nil {
 		log.Fatal("6", err)
@@ -45,11 +47,12 @@ func CheckifTableExists(table string) bool {
 	return false
 }
 
-func CheckifColumnExists(table, column string) bool {
+func CheckifColumnExistsSQLite(table, column string) bool {
 	if !IsSQLName(table) || !IsSQLName(column) {
 		fmt.Println("is not them")
 		return false
 	}
+    // PRAGMA table_info(tablename)
 	queryValue := "SELECT column_name FROM information_schema.columns WHERE table_name='" + table + "' and column_name='" + column + "';"
 	fmt.Println(queryValue)
 	db := OpenConn()
@@ -68,7 +71,7 @@ func CheckifColumnExists(table, column string) bool {
 	return false
 }
 
-func ProcessJSON(table_name string, body []byte) error {
+func ProcessJSONSQLite(table_name string, body []byte) error {
 		var output map[string]string
 		var outq = []string{}
 		if ! IsSQLName(table_name) {
@@ -80,7 +83,7 @@ func ProcessJSON(table_name string, body []byte) error {
 			return err
 		}
 		if ! CheckifTableExists(table_name) {
-			outq = append(outq, "CREATE TABLE "+table_name+" (id SERIAL PRIMARY KEY);")
+			outq = append(outq, "CREATE TABLE "+table_name+" (id INTEGER PRIMARY KEY AUTOINCREMENT);")
 		}
 		fieldsArr := []string{}
 		valuesArr := []string{}
