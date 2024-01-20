@@ -14,13 +14,12 @@ import (
 
 type PostgresDriver struct {
 	Bknd    Backend
-	Db      *sql.DB
 	ConnStr string
 }
 
 // printQueryResult - a very ugly function that allows me to return various things
-func (p PostgresDriver) PrintQueryResult(query string) ([]interface{}, error) {
-	rows, err := p.Db.Query(query)
+func (p PostgresDriver) PrintQueryResult(db *sql.DB, query string) ([]interface{}, error) {
+	rows, err := db.Query(query)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			log.Println(pqErr.Code.Name())
@@ -35,8 +34,8 @@ func (p PostgresDriver) PrintQueryResult(query string) ([]interface{}, error) {
 
 func (p PostgresDriver) CheckifTableExists(table string) bool {
 	queryValue := "select tablename as table from pg_tables where schemaname = 'public'"
-	p.OpenConn()
-	rowsout, err := p.PrintQueryResult(queryValue)
+	db := p.OpenConn()
+	rowsout, err := p.PrintQueryResult(db, queryValue)
 	if err != nil {
 		log.Fatal("6", err)
 		// return false
@@ -57,8 +56,8 @@ func (p PostgresDriver) CheckifColumnExists(table, column string) bool {
 	}
 	queryValue := "SELECT column_name FROM information_schema.columns WHERE table_name='" + table + "' and column_name='" + column + "';"
 	fmt.Println(queryValue)
-	p.OpenConn()
-	rowsout, err := p.PrintQueryResult(queryValue)
+	db := p.OpenConn()
+	rowsout, err := p.PrintQueryResult(db, queryValue)
 	if err != nil {
 		log.Println("7", err)
 		return true
@@ -99,9 +98,9 @@ func (p PostgresDriver) ProcessJSON(table_name string, body []byte) error {
 	fields := strings.Join(fieldsArr, ",")
 	values := "'" + strings.Join(valuesArr, "', '") + "'"
 	outq = append(outq, "INSERT INTO "+table_name+" ("+fields+") VALUES ("+values+");")
-	p.OpenConn()
+	db := p.OpenConn()
 	for _, s := range outq {
-		result, err := p.Db.Exec(s)
+		result, err := db.Exec(s)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -111,11 +110,11 @@ func (p PostgresDriver) ProcessJSON(table_name string, body []byte) error {
 	return nil
 }
 
-func (p PostgresDriver) OpenConn() {
+func (p PostgresDriver) OpenConn() *sql.DB {
 	var err error
-	p.Db, err = sql.Open("postgres", p.ConnStr)
+	db, err := sql.Open("postgres", p.ConnStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return
+	return db
 }

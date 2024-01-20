@@ -5,9 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 [Also based on](https://github.com/conventional-changelog/standard-version/blob/master/CHANGELOG.md) so decending.
 
-## [0.1.3] - 2024-01-19
+## [0.1.3] - 2024-01-20
 ### Added
 - adds sqlite3 code thru polymorphism
+- adds the rest of the sqlite code for scanning tables and columns
 
 ## [0.1.2] - 2024-01-16
 ### Changed

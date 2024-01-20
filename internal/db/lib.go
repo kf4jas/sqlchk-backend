@@ -9,11 +9,11 @@ import (
 )
 
 type DBDriver interface {
-	PrintQueryResult(query string) ([]interface{}, error)
+	PrintQueryResult(db *sql.DB, query string) ([]interface{}, error)
 	CheckifTableExists(table string) bool
 	CheckifColumnExists(table, column string) bool
 	ProcessJSON(table_name string, body []byte) error
-	OpenConn()
+	OpenConn() *sql.DB
 }
 
 type Backend struct{}

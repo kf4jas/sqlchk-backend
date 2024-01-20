@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	lite "github.com/mattn/go-sqlite3"
+	_ "github.com/mattn/go-sqlite3"
 	// "github.com/spf13/viper"
 	"log"
 	// "regexp"
@@ -15,21 +15,16 @@ import (
 
 type SQLiteDriver struct {
 	Bknd    Backend
-	Db      *sql.DB
 	ConnStr string
 }
 
 const file string = "sqlite.db"
 
 // printQueryResult - a very ugly function that allows me to return various things
-func (s SQLiteDriver) PrintQueryResult(query string) ([]interface{}, error) {
-	rows, err := s.Db.Query(query)
+func (s SQLiteDriver) PrintQueryResult(db *sql.DB, query string) ([]interface{}, error) {
+	rows, err := db.Query(query)
 	if err != nil {
-		if liteErr, ok := err.(*lite.Error); ok {
-			log.Println(liteErr.Error())
-			return nil, errors.New(liteErr.Error())
-		}
-		return nil, errors.New("unknown") // fiber.StatusInternalServerError
+		log.Fatal(err) // fiber.StatusInternalServerError
 	}
 	defer rows.Close()
 	rowsout, err := s.Bknd.ProcessRows(rows)
@@ -37,14 +32,16 @@ func (s SQLiteDriver) PrintQueryResult(query string) ([]interface{}, error) {
 }
 
 func (s SQLiteDriver) CheckifTableExists(table string) bool {
-	queryValue := "SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}';"
-	s.OpenConn()
-	rowsout, err := s.PrintQueryResult(queryValue)
+	queryValue := "SELECT name FROM sqlite_master WHERE type='table';"
+	db := s.OpenConn()
+	rowsout, err := s.PrintQueryResult(db, queryValue)
 	if err != nil {
 		log.Fatal("6", err)
 		// return false
 	}
+    fmt.Println("rowsout: ",rowsout)
 	for _, v := range rowsout {
+        fmt.Println(v)
 		m := v.(map[string]interface{})
 		if m["table"] == table {
 			return true
@@ -59,18 +56,19 @@ func (s SQLiteDriver) CheckifColumnExists(table, column string) bool {
 		return false
 	}
 	// PRAGMA table_info(tablename)
-	queryValue := "SELECT column_name FROM information_schema.columns WHERE table_name='" + table + "' and column_name='" + column + "';"
+	// queryValue := "SELECT column_name FROM information_schema.columns WHERE table_name='" + table + "' and column_name='" + column + "';"
+	queryValue := "SELECT name FROM PRAGMA_TABLE_INFO('"+table+"');"
 	fmt.Println(queryValue)
-	s.OpenConn()
-	rowsout, err := s.PrintQueryResult(queryValue)
+	db := s.OpenConn()
+	rowsout, err := s.PrintQueryResult(db, queryValue)
 	if err != nil {
 		log.Println("7", err)
 		return true
 	}
 	for _, v := range rowsout {
-		fmt.Println(v)
+		fmt.Println("cols",v)
 		m := v.(map[string]interface{})
-		if m["column_name"] == column {
+		if m["name"] == column {
 			return true
 		}
 	}
@@ -103,9 +101,9 @@ func (s SQLiteDriver) ProcessJSON(table_name string, body []byte) error {
 	fields := strings.Join(fieldsArr, ",")
 	values := "'" + strings.Join(valuesArr, "', '") + "'"
 	outq = append(outq, "INSERT INTO "+table_name+" ("+fields+") VALUES ("+values+");")
-	s.OpenConn()
+	db := s.OpenConn()
 	for _, st := range outq {
-		result, err := s.Db.Exec(st)
+		result, err := db.Exec(st)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -115,11 +113,11 @@ func (s SQLiteDriver) ProcessJSON(table_name string, body []byte) error {
 	return nil
 }
 
-func (s SQLiteDriver) OpenConn() {
+func (s SQLiteDriver) OpenConn() *sql.DB {
 	var err error
-	s.Db, err = sql.Open("sqlite3", s.ConnStr)
+	db, err := sql.Open("sqlite3", s.ConnStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return
+	return db
 }
