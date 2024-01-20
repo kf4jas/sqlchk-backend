@@ -95,7 +95,7 @@ func Start() {
 		if err := c.BodyParser(&payload); err != nil {
 			return err
 		}
-
+        cdb := db.GetDriver()
 		fmt.Printf("Wow: %v\n", payload.Query)
         db := cdb.OpenConn()
         fmt.Println("Opened a connection")
