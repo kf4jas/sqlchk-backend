@@ -45,10 +45,12 @@ func Start() {
 		PathPrefix: "frontend/public",
 		Browse:     false, // security
 	}))
+
 	app.Get("/log", func(c *fiber.Ctx) error {
 		utils.SendToLog("this log")
 		return nil
 	})
+
 	app.Get("/query", func(c *fiber.Ctx) error {
 		queryValue := c.Query("q")
 		// Safety Code v1.1
@@ -94,13 +96,6 @@ func Start() {
 			return err
 		}
 
-		// connStr := "postgresql://joee:password@localhost/joee?sslmode=require"
-		// connStr := payload.ConnStr
-		// Connect to database
-		cdb := db.GetDriver()
-		// Safety Code v1.1
-		// safeQuery := SafetyChecks(payload.Query)
-		// Raw SQL
 		fmt.Printf("Wow: %v\n", payload.Query)
         db := cdb.OpenConn()
         fmt.Println("Opened a connection")
