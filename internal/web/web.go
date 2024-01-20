@@ -3,12 +3,13 @@ package web
 import (
 	"embed"
 	"fmt"
+    "github.com/spf13/viper"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-    "sqlchk/internal/db"
-    "sqlchk/internal/utils"
 	"net/http"
+	"sqlchk/internal/db"
+	"sqlchk/internal/utils"
 )
 
 type Payload struct {
@@ -44,20 +45,24 @@ func Start() {
 		PathPrefix: "frontend/public",
 		Browse:     false, // security
 	}))
-    app.Get("/log",func(c *fiber.Ctx) error {
-        utils.SendToLog("this log")
-        return nil
-    })
+
+	app.Get("/log", func(c *fiber.Ctx) error {
+		utils.SendToLog("this log")
+		return nil
+	})
+
 	app.Get("/query", func(c *fiber.Ctx) error {
 		queryValue := c.Query("q")
 		// Safety Code v1.1
 		// safeQuery := SafetyChecks(payload.Query)
 		// Connect to database
-		cdb := db.OpenConn()
+		cdb := db.GetDriver()
 
 		// Raw SQL
 		fmt.Printf("query: %v\n", queryValue)
-		rowsout, err := db.PrintQueryResult(cdb, queryValue)
+		db := cdb.OpenConn()
+        fmt.Println("Opened a connection")
+        rowsout, err := cdb.PrintQueryResult(db, queryValue)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
@@ -71,8 +76,17 @@ func Start() {
 
 	app.Post("/data", func(c *fiber.Ctx) error {
 		table_name := c.Query("table")
-        utils.SendProcessJSONTask(table_name, c.Body())
-		return c.Send([]byte("Added"))
+        mqMode := viper.GetBool("mq_mode")
+	    if mqMode {
+            utils.SendProcessJSONTask(table_name, c.Body())
+            return c.Send([]byte("Added m(q)"))
+        }
+        cdb := db.GetDriver()
+        err := cdb.ProcessJSON(table_name,c.Body())
+        if err != nil {
+            return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+        }
+        return c.Send([]byte("Added"))
 	})
 
 	app.Post("/query", func(c *fiber.Ctx) error {
@@ -81,16 +95,11 @@ func Start() {
 		if err := c.BodyParser(&payload); err != nil {
 			return err
 		}
-
-		// connStr := "postgresql://joee:password@localhost/joee?sslmode=require"
-		// connStr := payload.ConnStr
-		// Connect to database
-		cdb := db.OpenConn()
-		// Safety Code v1.1
-		// safeQuery := SafetyChecks(payload.Query)
-		// Raw SQL
+        cdb := db.GetDriver()
 		fmt.Printf("Wow: %v\n", payload.Query)
-		rowsout, err := db.PrintQueryResult(cdb, payload.Query)
+        db := cdb.OpenConn()
+        fmt.Println("Opened a connection")
+		rowsout, err := cdb.PrintQueryResult(db, payload.Query)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}

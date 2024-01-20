@@ -1,20 +1,20 @@
 package utils
 
 import (
+	"context"
 	"fmt"
-    "time"
-    "context"
-	"github.com/google/uuid"
-    "github.com/RichardKnop/machinery/v1"
+	"github.com/RichardKnop/machinery/v1"
 	"github.com/RichardKnop/machinery/v1/config"
-    "github.com/RichardKnop/machinery/v1/tasks"
-    "github.com/RichardKnop/machinery/v1/log"
+	"github.com/RichardKnop/machinery/v1/log"
+	"github.com/RichardKnop/machinery/v1/tasks"
+	"github.com/google/uuid"
+	"time"
 
-    tracers "github.com/RichardKnop/machinery/example/tracers"
-	task "sqlchk/internal/tasks"
-    opentracing "github.com/opentracing/opentracing-go"
-    opentracing_log "github.com/opentracing/opentracing-go/log"
+	tracers "github.com/RichardKnop/machinery/example/tracers"
+	opentracing "github.com/opentracing/opentracing-go"
+	opentracing_log "github.com/opentracing/opentracing-go/log"
 	"go.uber.org/zap"
+	task "sqlchk/internal/tasks"
 )
 
 var (
@@ -50,13 +50,12 @@ func StartServer() (*machinery.Server, error) {
 
 	// Register tasks
 	rtasks := map[string]interface{}{
-		"addtolog": task.AddToLog,
-        "processjsontask": task.ProcessJSONTask,
+		"addtolog":        task.AddToLog,
+		"processjsontask": task.ProcessJSONTask,
 	}
 
 	return server, server.RegisterTasks(rtasks)
 }
-
 
 func GetMachineryServer() *machinery.Server {
 	Logger.Info("initing task server")
@@ -70,16 +69,15 @@ func GetMachineryServer() *machinery.Server {
 	}
 
 	taskserver.RegisterTasks(map[string]interface{}{
-		"addtolog": task.AddToLog,
-        "processjsontask": task.ProcessJSONTask,
+		"addtolog":        task.AddToLog,
+		"processjsontask": task.ProcessJSONTask,
 	})
 
 	return taskserver
 }
 
-
-func SendProcessJSONTask(table_name string,content []byte) error {
-    cleanup, err := tracers.SetupTracer("sender")
+func SendProcessJSONTask(table_name string, content []byte) error {
+	cleanup, err := tracers.SetupTracer("sender")
 	if err != nil {
 		log.FATAL.Fatalln("Unable to instantiate a tracer:", err)
 	}
@@ -91,7 +89,7 @@ func SendProcessJSONTask(table_name string,content []byte) error {
 	}
 
 	var (
-		ProcessJSONTask                     tasks.Signature
+		ProcessJSONTask tasks.Signature
 	)
 
 	var initTasks = func() {
@@ -102,14 +100,14 @@ func SendProcessJSONTask(table_name string,content []byte) error {
 					Type:  "string",
 					Value: table_name,
 				},
-                {
+				{
 					Type:  "[]byte",
-					Value: content,                    
-                },
+					Value: content,
+				},
 			},
 		}
-    }
-	
+	}
+
 	/*
 	 * Lets start a span representing this run of the `send` command and
 	 * set a batch id as baggage so it can travel all the way into
@@ -143,7 +141,6 @@ func SendProcessJSONTask(table_name string,content []byte) error {
 	return nil
 }
 
-
 func SendToLog(data string) error {
 	cleanup, err := tracers.SetupTracer("sender")
 	if err != nil {
@@ -157,7 +154,7 @@ func SendToLog(data string) error {
 	}
 
 	var (
-		AddToLog                     tasks.Signature
+		AddToLog tasks.Signature
 	)
 
 	var initTasks = func() {
@@ -170,8 +167,8 @@ func SendToLog(data string) error {
 				},
 			},
 		}
-    }
-	
+	}
+
 	/*
 	 * Lets start a span representing this run of the `send` command and
 	 * set a batch id as baggage so it can travel all the way into
