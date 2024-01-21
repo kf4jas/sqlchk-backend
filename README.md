@@ -47,3 +47,29 @@ To create a production version of your app:
 make
 ```
 
+### Setting up a docker one
+
+docker compose up -d --build is run when you run up
+and docker compose down is run when you run down.
+I think it specify the docker-compose.yml file but
+we can replace that with the sqlite deployment.
+
+
+
+Compose up
+
+```
+make up
+```
+
+Compose logs
+
+```
+make logs
+```
+
+Compose down
+
+```
+make down
+```
