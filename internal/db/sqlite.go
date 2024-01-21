@@ -43,7 +43,7 @@ func (s SQLiteDriver) CheckifTableExists(table string) bool {
 	for _, v := range rowsout {
         fmt.Println(v)
 		m := v.(map[string]interface{})
-		if m["table"] == table {
+		if m["name"] == table {
 			return true
 		}
 	}
