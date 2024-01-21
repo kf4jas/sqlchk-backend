@@ -39,9 +39,9 @@ func (s SQLiteDriver) CheckifTableExists(table string) bool {
 		log.Fatal("6", err)
 		// return false
 	}
-    fmt.Println("rowsout: ",rowsout)
+	fmt.Println("rowsout: ", rowsout)
 	for _, v := range rowsout {
-        fmt.Println(v)
+		fmt.Println(v)
 		m := v.(map[string]interface{})
 		if m["name"] == table {
 			return true
@@ -57,7 +57,7 @@ func (s SQLiteDriver) CheckifColumnExists(table, column string) bool {
 	}
 	// PRAGMA table_info(tablename)
 	// queryValue := "SELECT column_name FROM information_schema.columns WHERE table_name='" + table + "' and column_name='" + column + "';"
-	queryValue := "SELECT name FROM PRAGMA_TABLE_INFO('"+table+"');"
+	queryValue := "SELECT name FROM PRAGMA_TABLE_INFO('" + table + "');"
 	fmt.Println(queryValue)
 	db := s.OpenConn()
 	rowsout, err := s.PrintQueryResult(db, queryValue)
@@ -66,7 +66,7 @@ func (s SQLiteDriver) CheckifColumnExists(table, column string) bool {
 		return true
 	}
 	for _, v := range rowsout {
-		fmt.Println("cols",v)
+		fmt.Println("cols", v)
 		m := v.(map[string]interface{})
 		if m["name"] == column {
 			return true

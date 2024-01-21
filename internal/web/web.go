@@ -3,10 +3,10 @@ package web
 import (
 	"embed"
 	"fmt"
-    "github.com/spf13/viper"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/spf13/viper"
 	"net/http"
 	"sqlchk/internal/db"
 	"sqlchk/internal/utils"
@@ -61,8 +61,8 @@ func Start() {
 		// Raw SQL
 		fmt.Printf("query: %v\n", queryValue)
 		db := cdb.OpenConn()
-        fmt.Println("Opened a connection")
-        rowsout, err := cdb.PrintQueryResult(db, queryValue)
+		fmt.Println("Opened a connection")
+		rowsout, err := cdb.PrintQueryResult(db, queryValue)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 		}
@@ -76,17 +76,17 @@ func Start() {
 
 	app.Post("/data", func(c *fiber.Ctx) error {
 		table_name := c.Query("table")
-        mqMode := viper.GetBool("mq_mode")
-	    if mqMode {
-            utils.SendProcessJSONTask(table_name, c.Body())
-            return c.Send([]byte("Added m(q)"))
-        }
-        cdb := db.GetDriver()
-        err := cdb.ProcessJSON(table_name,c.Body())
-        if err != nil {
-            return fiber.NewError(fiber.StatusInternalServerError, err.Error())
-        }
-        return c.Send([]byte("Added"))
+		mqMode := viper.GetBool("mq_mode")
+		if mqMode {
+			utils.SendProcessJSONTask(table_name, c.Body())
+			return c.Send([]byte("Added m(q)"))
+		}
+		cdb := db.GetDriver()
+		err := cdb.ProcessJSON(table_name, c.Body())
+		if err != nil {
+			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
+		}
+		return c.Send([]byte("Added"))
 	})
 
 	app.Post("/query", func(c *fiber.Ctx) error {
@@ -95,10 +95,10 @@ func Start() {
 		if err := c.BodyParser(&payload); err != nil {
 			return err
 		}
-        cdb := db.GetDriver()
+		cdb := db.GetDriver()
 		fmt.Printf("Wow: %v\n", payload.Query)
-        db := cdb.OpenConn()
-        fmt.Println("Opened a connection")
+		db := cdb.OpenConn()
+		fmt.Println("Opened a connection")
 		rowsout, err := cdb.PrintQueryResult(db, payload.Query)
 		if err != nil {
 			return fiber.NewError(fiber.StatusInternalServerError, err.Error())
